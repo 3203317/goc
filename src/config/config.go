@@ -1,5 +1,5 @@
 package config
 
-func LoadConfig(){
+func LoadConfig() {
 
 }
