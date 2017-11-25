@@ -1,5 +1,7 @@
 @echo off
 
+del .\bin\goc.exe
+
 setlocal
 
 if exist install.bat goto ok
