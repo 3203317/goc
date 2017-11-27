@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ ! -f install ]; then
+if [ ! -f install.sh ]; then
 echo 'install.sh must be run from its folder' 1>&2
 exit 1
 fi
