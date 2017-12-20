@@ -19,3 +19,6 @@ go install goc
 
 :end
 echo finished
+echo.
+
+.\bin\goc.exe
