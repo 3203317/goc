@@ -33,14 +33,14 @@ func main() {
 
 	// log.Println(pong)
 
-	uuid := strings.Replace(UUID.Rand().Hex(), "-", "", -1)
+	token := strings.Replace(UUID.Rand().Hex(), "-", "", -1)
 
-	vals, err := client.EvalSha("a0ad12f31d7de75a5153bdff954caf5bc15b9501", []string{"1", "1", "backend_1", uuid}, 5, 68, "BACK").Result()
+	_token, err := client.EvalSha("a0ad12f31d7de75a5153bdff954caf5bc15b9501", []string{"1", "1", "backend_1", token}, 5, 68, "BACK").Result()
 	if nil != err {
 		log.Fatal(err)
 	}
 
-	log.Println(vals)
+	log.Println(_token)
 
 	// http.HandleFunc("/", def)
 	// err := http.ListenAndServe(":80", nil)
