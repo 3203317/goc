@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 	"strings"
 )
 
@@ -40,7 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println(_token)
+	log.Println(_token, reflect.TypeOf(_token))
 
 	// http.HandleFunc("/", def)
 	// err := http.ListenAndServe(":80", nil)
