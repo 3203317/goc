@@ -4,8 +4,8 @@ import (
 	"config"
 	"fmt"
 	"github.com/go-redis/redis"
+	_ "github.com/gorilla/websocket"
 	UUID "github.com/snluu/uuid"
-	_ "golang.org/x/net/websocket"
 	"io"
 	"log"
 	"net/http"
@@ -21,11 +21,25 @@ func main() {
 	config.LoadCfg()
 	fmt.Println("Hello, GO!")
 
+	token := connRedis()
+
+	log.Println(token, reflect.TypeOf(token))
+
+	// http.HandleFunc("/", def)
+	// err := http.ListenAndServe(":80", nil)
+	// if nil != err {
+	// 	log.Fatal(err)
+	// }
+}
+
+func connRedis() interface{} {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "47.104.99.102:6379",
 		Password: "123456",
 		DB:       1,
 	})
+
+	defer client.Close()
 
 	// pong, err := client.Ping().Result()
 	// if nil != err {
@@ -41,11 +55,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println(_token, reflect.TypeOf(_token))
-
-	// http.HandleFunc("/", def)
-	// err := http.ListenAndServe(":80", nil)
-	// if nil != err {
-	// 	log.Fatal(err)
-	// }
+	return _token
 }
