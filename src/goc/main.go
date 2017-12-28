@@ -4,10 +4,12 @@ import (
 	"config"
 	"fmt"
 	"github.com/go-redis/redis"
+	UUID "github.com/snluu/uuid"
 	_ "golang.org/x/net/websocket"
 	"io"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func def(w http.ResponseWriter, req *http.Request) {
@@ -31,7 +33,9 @@ func main() {
 
 	// log.Println(pong)
 
-	vals, err := client.EvalSha("a0ad12f31d7de75a5153bdff954caf5bc15b9501", []string{"1", "1", "backend_1", "123456"}, 5, 68, "BACK").Result()
+	uuid := strings.Replace(UUID.Rand().Hex(), "-", "", -1)
+
+	vals, err := client.EvalSha("a0ad12f31d7de75a5153bdff954caf5bc15b9501", []string{"1", "1", "backend_1", uuid}, 5, 68, "BACK").Result()
 	if nil != err {
 		log.Fatal(err)
 	}
