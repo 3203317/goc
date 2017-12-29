@@ -32,7 +32,7 @@ func main() {
 	// }
 }
 
-func connRedis() interface{} {
+func connRedis() string {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "47.104.99.102:6379",
 		Password: "123456",
@@ -55,5 +55,6 @@ func connRedis() interface{} {
 		log.Fatal(err)
 	}
 
-	return _token
+	a, _ := _token.(string)
+	return a
 }
