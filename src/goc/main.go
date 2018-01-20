@@ -35,7 +35,7 @@ func main() {
 func connRedis() string {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "47.104.99.102:6379",
-		Password: "",
+		Password: "shuoleniyebudong",
 		DB:       1,
 	})
 
@@ -48,13 +48,13 @@ func connRedis() string {
 
 	// log.Println(pong)
 
-	token := strings.Replace(UUID.Rand().Hex(), "-", "", -1)
+	uuid := strings.Replace(UUID.Rand().Hex(), "-", "", -1)
 
-	_token, err := client.EvalSha("a0ad12f31d7de75a5153bdff954caf5bc15b9501", []string{"1", "1", "backend_1", token}, 5, 68, "BACK").Result()
+	_token, err := client.EvalSha("a0ad12f31d7de75a5153bdff954caf5bc15b9501", []string{"1", "1", "backend_1", uuid}, 5, 68, "BACK").Result()
 	if nil != err {
 		log.Fatal(err)
 	}
 
-	a, _ := _token.(string)
-	return a
+	token, _ := _token.(string)
+	return token
 }

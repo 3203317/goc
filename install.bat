@@ -18,7 +18,7 @@ gofmt -w src
 go install goc
 
 :end
-echo finished
+echo [FINISHED]
 echo.
 
 .\bin\goc.exe

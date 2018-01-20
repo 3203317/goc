@@ -15,4 +15,4 @@ go install goc
 
 export GOPATH="$OLDGOPATH"
 
-echo 'finished'
+echo '[FINISHED]'
