@@ -23,7 +23,7 @@ func main() {
 
 	token := connRedis()
 
-	log.Println(token, reflect.TypeOf(token))
+	fmt.Println(token, reflect.TypeOf(token))
 
 	// http.HandleFunc("/", def)
 	// err := http.ListenAndServe(":80", nil)
@@ -35,7 +35,7 @@ func main() {
 func connRedis() string {
 	client := redis.NewClient(&redis.Options{
 		Addr:     "47.104.99.102:6379",
-		Password: "123456",
+		Password: "",
 		DB:       1,
 	})
 
