@@ -8,6 +8,7 @@ import (
 	UUID "github.com/snluu/uuid"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"reflect"
 	"strings"
@@ -30,6 +31,29 @@ func main() {
 	// if nil != err {
 	// 	log.Fatal(err)
 	// }
+
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", "47.104.99.102:9988")
+
+	if nil != err {
+		log.Fatal(err)
+	}
+
+	conn, err := net.DialTCP("tcp", nil, tcpAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer conn.Close()
+
+	lens, err := conn.Write([]byte(token))
+	if nil != err {
+		log.Fatal(err)
+	}
+
+	fmt.Println(lens)
+
+	for {
+	}
 }
 
 func connRedis() string {
