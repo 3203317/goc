@@ -9,6 +9,7 @@ import (
 	UUID "github.com/snluu/uuid"
 	"io"
 	"log"
+	"msg"
 	"net"
 	"net/http"
 	"net/url"
@@ -46,31 +47,33 @@ func main() {
 
 	// runTcpCli(token)
 
-	u := url.URL{Scheme: "ws", Host: *server_addr, Path: "/"}
-	var dialer *websocket.Dialer
+	runWsCli(token)
+}
 
-	conn, _, err := dialer.Dial(u.String(), nil)
-	if err != nil {
-		fmt.Println(err)
-		return
+func runWsCli(token string) {
+	u := url.URL{Scheme: "ws", Host: *server_addr, Path: "/"}
+
+	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+
+	if nil != err {
+		log.Fatal(err)
 	}
 
-	go timeWriter2(conn, token)
+	defer conn.Close()
+
+	go msg.Login(conn, token)
+
 	go timeWriter(conn, token)
 
 	for {
-		_, message, err := conn.ReadMessage()
+		_, message_111, err := conn.ReadMessage()
 		if err != nil {
 			fmt.Println("read:", err)
 			return
 		}
 
-		fmt.Printf("received: %s\n", message)
+		fmt.Printf("received: %s\n", message_111)
 	}
-}
-
-func timeWriter2(conn *websocket.Conn, token string) {
-	conn.WriteMessage(websocket.BinaryMessage, []byte(token))
 }
 
 func timeWriter(conn *websocket.Conn, token string) {
