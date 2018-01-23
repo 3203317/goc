@@ -3,6 +3,7 @@ package msg
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
+	"io"
 	"log"
 	"time"
 )
@@ -25,15 +26,31 @@ func Heartbeat(conn *websocket.Conn) {
 	}
 }
 
-func Test(conn *websocket.Conn) {
+func Test(c *websocket.Conn) {
 	for {
-		_, p, err := conn.ReadMessage()
 
-		if nil != err {
-			log.Println(err)
-			return
+		_, p, err := c.NextReader()
+
+		if err != nil {
+			c.Close()
+			break
 		}
 
-		fmt.Printf("rec: %s\n", p)
+		aaa, _ := readFrom(p, 128)
+
+		fmt.Println(string(aaa))
+
+		// p1, _ := ioutil.ReadAll(p)
+
+		// fmt.Println(string(p1))
 	}
+}
+
+func readFrom(reader io.Reader, num int) ([]byte, error) {
+	p := make([]byte, num)
+	n, err := reader.Read(p)
+	if n > 0 {
+		return p[:n], nil
+	}
+	return p, err
 }
