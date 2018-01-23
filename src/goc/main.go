@@ -4,14 +4,16 @@ import (
 	"config"
 	"fmt"
 	"github.com/go-redis/redis"
-	_ "github.com/gorilla/websocket"
+	"github.com/gorilla/websocket"
 	UUID "github.com/snluu/uuid"
 	"io"
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strings"
+	"time"
 )
 
 func def(w http.ResponseWriter, req *http.Request) {
@@ -32,6 +34,41 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 
+	// runTcpCli(token)
+
+	u := url.URL{Scheme: "ws", Host: "47.104.99.102:9988", Path: "/"}
+	var dialer *websocket.Dialer
+
+	conn, _, err := dialer.Dial(u.String(), nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	go timeWriter(conn, token)
+
+	for {
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			fmt.Println("read:", err)
+			return
+		}
+
+		fmt.Printf("received: %s\n", message)
+	}
+}
+
+func timeWriter(conn *websocket.Conn, token string) {
+	for {
+		time.Sleep(time.Second * 2)
+		// conn.WriteMessage(websocket.TextMessage, []byte(time.Now().Format("2006-01-02 15:04:05")))
+		conn.WriteMessage(websocket.BinaryMessage, []byte(token))
+		conn.WriteMessage(websocket.BinaryMessage, []byte("['',7,'']"))
+		conn.WriteMessage(websocket.BinaryMessage, []byte("['',2,'']"))
+	}
+}
+
+func runTcpCli(token string) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", "47.104.99.102:9988")
 
 	if nil != err {
