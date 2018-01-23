@@ -15,7 +15,6 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
-	"time"
 )
 
 var (
@@ -61,27 +60,15 @@ func runWsCli(token string) {
 
 	defer conn.Close()
 
-	go msg.Login(conn, token)
+	conn.EnableWriteCompression(true)
 
-	go timeWriter(conn, token)
+	msg.Login(conn, token)
+
+	go msg.Heartbeat(conn)
+
+	go msg.Test(conn)
 
 	for {
-		_, message_111, err := conn.ReadMessage()
-		if err != nil {
-			fmt.Println("read:", err)
-			return
-		}
-
-		fmt.Printf("received: %s\n", message_111)
-	}
-}
-
-func timeWriter(conn *websocket.Conn, token string) {
-	for {
-		time.Sleep(time.Second * 2)
-		// conn.WriteMessage(websocket.TextMessage, []byte(time.Now().Format("2006-01-02 15:04:05")))
-		conn.WriteMessage(websocket.BinaryMessage, []byte("['',7,'']"))
-		conn.WriteMessage(websocket.BinaryMessage, []byte("['',2,'']"))
 	}
 }
 
