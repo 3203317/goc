@@ -1,11 +1,15 @@
 package msg
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"io"
 	"log"
 	"time"
+)
+
+var (
+	HEARTBEAT = flag.Duration("HEARTBEAT", 1, "心跳(秒)")
 )
 
 func Login(conn *websocket.Conn, token string) {
@@ -18,7 +22,7 @@ func Login(conn *websocket.Conn, token string) {
 
 func Heartbeat(conn *websocket.Conn) {
 	for {
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Nanosecond * *HEARTBEAT)
 
 		if err := conn.WriteMessage(websocket.BinaryMessage, []byte("['',7,'']")); nil != err {
 			log.Fatal(err)
@@ -26,31 +30,16 @@ func Heartbeat(conn *websocket.Conn) {
 	}
 }
 
-func Test(c *websocket.Conn) {
+func OnMessage(conn *websocket.Conn) {
 	for {
+		_, data, err := conn.ReadMessage()
 
-		_, p, err := c.NextReader()
-
-		if err != nil {
-			c.Close()
+		if nil != err {
+			conn.Close()
+			log.Fatal(err)
 			break
 		}
 
-		aaa, _ := readFrom(p, 128)
-
-		fmt.Println(string(aaa))
-
-		// p1, _ := ioutil.ReadAll(p)
-
-		// fmt.Println(string(p1))
+		fmt.Println(string(data))
 	}
-}
-
-func readFrom(reader io.Reader, num int) ([]byte, error) {
-	p := make([]byte, num)
-	n, err := reader.Read(p)
-	if n > 0 {
-		return p[:n], nil
-	}
-	return p, err
 }

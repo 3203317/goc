@@ -18,10 +18,10 @@ import (
 )
 
 var (
-	server_addr    = flag.String("server_addr", "47.104.99.102:9988", "前置机地址")
-	redis_addr     = flag.String("redis_addr", "47.104.99.102:6379", "Redis地址")
-	redis_pwd      = flag.String("redis_pwd", "shuoleniyebudong", "Redis密码")
-	redis_sha_auth = flag.String("redis_sha_auth", "a0ad12f31d7de75a5153bdff954caf5bc15b9501", "Redis授权码")
+	SERVER_ADDR    = flag.String("SERVER_ADDR", "47.104.99.102:9988", "前置机地址")
+	REDIS_ADDR     = flag.String("REDIS_ADDR", "47.104.99.102:6379", "Redis地址")
+	REDIS_PWD      = flag.String("REDIS_PWD", "shuoleniyebudong", "Redis密码")
+	REDIS_SHA_AUTH = flag.String("REDIS_SHA_AUTH", "a0ad12f31d7de75a5153bdff954caf5bc15b9501", "Redis授权码")
 )
 
 func def(w http.ResponseWriter, req *http.Request) {
@@ -50,7 +50,7 @@ func main() {
 }
 
 func runWsCli(token string) {
-	u := url.URL{Scheme: "ws", Host: *server_addr, Path: "/"}
+	u := url.URL{Scheme: "ws", Host: *SERVER_ADDR, Path: "/"}
 
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 
@@ -66,14 +66,11 @@ func runWsCli(token string) {
 
 	go msg.Heartbeat(conn)
 
-	go msg.Test(conn)
-
-	for {
-	}
+	msg.OnMessage(conn)
 }
 
 func runTcpCli(token string) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", *server_addr)
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", *SERVER_ADDR)
 
 	if nil != err {
 		log.Fatal(err)
@@ -99,8 +96,8 @@ func runTcpCli(token string) {
 
 func connRedis() string {
 	client := redis.NewClient(&redis.Options{
-		Addr:     *redis_addr,
-		Password: *redis_pwd,
+		Addr:     *REDIS_ADDR,
+		Password: *REDIS_PWD,
 		DB:       1,
 	})
 
@@ -115,7 +112,7 @@ func connRedis() string {
 
 	uuid := strings.Replace(UUID.Rand().Hex(), "-", "", -1)
 
-	_token, err := client.EvalSha(*redis_sha_auth, []string{"1", "1", "backend_1", uuid}, 5, 68, "BACK").Result()
+	_token, err := client.EvalSha(*REDIS_SHA_AUTH, []string{"1", "1", "backend_1", uuid}, 5, 68, "BACK").Result()
 	if nil != err {
 		log.Fatal(err)
 	}
