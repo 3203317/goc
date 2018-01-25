@@ -20,8 +20,12 @@ func Login(conn *websocket.Conn, token string) {
 	fmt.Println("send token:", token)
 }
 
-func Heartbeat(conn *websocket.Conn) {
+func Heartbeat(conn *websocket.Conn, ch_err_code chan int) {
 	ticker := time.NewTicker(time.Nanosecond * *HEARTBEAT)
+
+	defer func() {
+		ticker.Stop()
+	}()
 
 	b := []byte("['',7,'']")
 
@@ -33,10 +37,6 @@ func Heartbeat(conn *websocket.Conn) {
 			}
 		}
 	}
-
-	defer func() {
-		ticker.Stop()
-	}()
 }
 
 func OnMessage(conn *websocket.Conn, ch_read_msg chan string, ch_err_code chan int) {

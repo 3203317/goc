@@ -71,7 +71,7 @@ func runWsCli(token string) {
 
 	msg.Login(conn, token)
 
-	go msg.Heartbeat(conn)
+	go msg.Heartbeat(conn, ch_err_code)
 
 	for {
 		select {
@@ -80,6 +80,8 @@ func runWsCli(token string) {
 		case code := <-ch_err_code:
 			switch code {
 			case websocket.CloseAbnormalClosure:
+				fmt.Println("code:", code)
+			default:
 				fmt.Println("code:", code)
 			}
 		}
