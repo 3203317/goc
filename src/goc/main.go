@@ -79,6 +79,8 @@ func runWsCli(token string) {
 			fmt.Println("data:", msg)
 		case code := <-ch_err_code:
 			switch code {
+			case websocket.CloseNoStatusReceived:
+				fmt.Println("code:", code)
 			case websocket.CloseAbnormalClosure:
 				fmt.Println("code:", code)
 			default:
