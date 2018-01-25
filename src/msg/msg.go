@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	HEARTBEAT = flag.Duration("HEARTBEAT", 1, "心跳(秒)")
+	HEARTBEAT = flag.Duration("HEARTBEAT", 1, "心跳间隔(秒)")
 )
 
 func Login(conn *websocket.Conn, token string) {
@@ -21,11 +21,16 @@ func Login(conn *websocket.Conn, token string) {
 }
 
 func Heartbeat(conn *websocket.Conn) {
-	for {
-		time.Sleep(time.Nanosecond * *HEARTBEAT)
+	ticker := time.NewTicker(time.Nanosecond * *HEARTBEAT)
 
-		if err := conn.WriteMessage(websocket.BinaryMessage, []byte("['',7,'']")); nil != err {
-			log.Fatal(err)
+	b := []byte("['',7,'']")
+
+	for {
+		select {
+		case <-ticker.C:
+			if err := conn.WriteMessage(websocket.BinaryMessage, b); nil != err {
+				log.Fatal(err)
+			}
 		}
 	}
 }

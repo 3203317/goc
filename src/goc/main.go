@@ -62,11 +62,11 @@ func runWsCli(token string) {
 
 	conn.EnableWriteCompression(true)
 
+	go msg.OnMessage(conn)
+
 	msg.Login(conn, token)
 
-	go msg.Heartbeat(conn)
-
-	msg.OnMessage(conn)
+	msg.Heartbeat(conn)
 }
 
 func runTcpCli(token string) {
