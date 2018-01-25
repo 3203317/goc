@@ -24,6 +24,11 @@ var (
 	REDIS_SHA_AUTH = flag.String("REDIS_SHA_AUTH", "a0ad12f31d7de75a5153bdff954caf5bc15b9501", "Redis授权码")
 )
 
+var (
+	ch_read_msg = make(chan string)
+	ch_err_code = make(chan int)
+)
+
 func def(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, "hello, world!\n")
 }
@@ -62,11 +67,23 @@ func runWsCli(token string) {
 
 	conn.EnableWriteCompression(true)
 
-	go msg.OnMessage(conn)
+	go msg.OnMessage(conn, ch_read_msg, ch_err_code)
 
 	msg.Login(conn, token)
 
-	msg.Heartbeat(conn)
+	go msg.Heartbeat(conn)
+
+	for {
+		select {
+		case msg := <-ch_read_msg:
+			fmt.Println("data:", msg)
+		case code := <-ch_err_code:
+			switch code {
+			case websocket.CloseAbnormalClosure:
+				fmt.Println("code:", code)
+			}
+		}
+	}
 }
 
 func runTcpCli(token string) {

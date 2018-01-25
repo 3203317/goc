@@ -17,7 +17,7 @@ func Login(conn *websocket.Conn, token string) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("send token: ", token)
+	fmt.Println("send token:", token)
 }
 
 func Heartbeat(conn *websocket.Conn) {
@@ -33,18 +33,22 @@ func Heartbeat(conn *websocket.Conn) {
 			}
 		}
 	}
+
+	defer func() {
+		ticker.Stop()
+	}()
 }
 
-func OnMessage(conn *websocket.Conn) {
+func OnMessage(conn *websocket.Conn, ch_read_msg chan string, ch_err_code chan int) {
 	for {
-		_, data, err := conn.ReadMessage()
+		_, msg, err := conn.ReadMessage()
 
 		if nil != err {
-			conn.Close()
-			log.Fatal(err)
+			werr := err.(*websocket.CloseError)
+			ch_err_code <- werr.Code
 			break
 		}
 
-		fmt.Println(string(data))
+		ch_read_msg <- string(msg)
 	}
 }
