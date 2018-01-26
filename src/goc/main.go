@@ -75,6 +75,8 @@ func runWsCli(token string) {
 
 	go msg.Heartbeat(conn, ch_write_msg, ch_err_code)
 
+	b := []byte("['',2,'']")
+
 	for {
 		select {
 		case msg := <-ch_read_msg:
@@ -86,6 +88,8 @@ func runWsCli(token string) {
 			}
 
 			fmt.Println("data:", sb)
+
+			ch_write_msg <- b
 
 		case code := <-ch_err_code:
 
