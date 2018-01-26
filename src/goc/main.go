@@ -27,7 +27,7 @@ var (
 var (
 	ch_read_msg  = make(chan []byte)
 	ch_write_msg = make(chan []byte)
-	ch_err_code  = make(chan int)
+	ch_err_code  = make(chan error)
 )
 
 func def(w http.ResponseWriter, req *http.Request) {
