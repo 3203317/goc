@@ -2,6 +2,7 @@ package main
 
 import (
 	"config"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/go-redis/redis"
@@ -25,7 +26,7 @@ var (
 )
 
 var (
-	ch_read_msg = make(chan string)
+	ch_read_msg = make(chan []byte)
 	ch_err_code = make(chan int)
 )
 
@@ -76,16 +77,26 @@ func runWsCli(token string) {
 	for {
 		select {
 		case msg := <-ch_read_msg:
-			fmt.Println("data:", msg)
+
+			var sb []interface{}
+
+			if err := json.Unmarshal(msg, &sb); nil != err {
+				log.Fatal(err)
+			}
+
+			fmt.Println("data:", sb)
+
 		case code := <-ch_err_code:
+
 			switch code {
 			case websocket.CloseNoStatusReceived:
-				fmt.Println("code:", code)
+				fmt.Println("CloseNoStatusReceived:", code)
 			case websocket.CloseAbnormalClosure:
-				fmt.Println("code:", code)
+				fmt.Println("CloseAbnormalClosure:", code)
 			default:
 				fmt.Println("code:", code)
 			}
+
 		}
 	}
 }

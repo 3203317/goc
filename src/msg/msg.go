@@ -39,7 +39,7 @@ func Heartbeat(conn *websocket.Conn, ch_err_code chan int) {
 	}
 }
 
-func OnMessage(conn *websocket.Conn, ch_read_msg chan string, ch_err_code chan int) {
+func OnMessage(conn *websocket.Conn, ch_read_msg chan []byte, ch_err_code chan int) {
 	for {
 		_, msg, err := conn.ReadMessage()
 
@@ -49,6 +49,6 @@ func OnMessage(conn *websocket.Conn, ch_read_msg chan string, ch_err_code chan i
 			break
 		}
 
-		ch_read_msg <- string(msg)
+		ch_read_msg <- msg
 	}
 }
