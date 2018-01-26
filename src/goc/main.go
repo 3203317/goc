@@ -2,7 +2,6 @@ package main
 
 import (
 	"config"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/go-redis/redis"
@@ -73,39 +72,9 @@ func runWsCli(token string) {
 
 	msg.Login(conn, token)
 
-	go msg.Heartbeat(conn, ch_write_msg, ch_err_code)
+	go msg.Process(ch_read_msg, ch_write_msg, ch_err_code)
 
-	b := []byte("['',2,'']")
-
-	for {
-		select {
-		case msg := <-ch_read_msg:
-
-			var sb []interface{}
-
-			if err := json.Unmarshal(msg, &sb); nil != err {
-				log.Fatal(err)
-			}
-
-			fmt.Println("data:", sb)
-
-			ch_write_msg <- b
-
-		case code := <-ch_err_code:
-
-			switch code {
-			case websocket.CloseNoStatusReceived:
-				fmt.Println("CloseNoStatusReceived:", code)
-			case websocket.CloseAbnormalClosure:
-				fmt.Println("CloseAbnormalClosure:", code)
-			case websocket.CloseMessageTooBig:
-				fmt.Println("CloseMessageTooBig:", code)
-			default:
-				fmt.Println("code:", code)
-			}
-
-		}
-	}
+	msg.Heartbeat(conn, ch_write_msg, ch_err_code)
 }
 
 func runTcpCli(token string) {
