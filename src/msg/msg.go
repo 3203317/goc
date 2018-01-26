@@ -20,7 +20,7 @@ func Login(conn *websocket.Conn, token string) {
 	fmt.Println("send token:", token)
 }
 
-func Heartbeat(conn *websocket.Conn, ch_err_code chan int) {
+func Heartbeat(conn *websocket.Conn, ch_write_msg chan []byte, ch_err_code chan int) {
 	ticker := time.NewTicker(time.Nanosecond * *HEARTBEAT)
 
 	defer func() {
@@ -32,9 +32,17 @@ func Heartbeat(conn *websocket.Conn, ch_err_code chan int) {
 	for {
 		select {
 		case <-ticker.C:
+
 			if err := conn.WriteMessage(websocket.BinaryMessage, b); nil != err {
 				log.Fatal(err)
 			}
+
+		case msg := <-ch_write_msg:
+
+			if err := conn.WriteMessage(websocket.BinaryMessage, msg); nil != err {
+				log.Fatal(err)
+			}
+
 		}
 	}
 }

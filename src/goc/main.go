@@ -26,8 +26,9 @@ var (
 )
 
 var (
-	ch_read_msg = make(chan []byte)
-	ch_err_code = make(chan int)
+	ch_read_msg  = make(chan []byte)
+	ch_write_msg = make(chan []byte)
+	ch_err_code  = make(chan int)
 )
 
 func def(w http.ResponseWriter, req *http.Request) {
@@ -72,7 +73,7 @@ func runWsCli(token string) {
 
 	msg.Login(conn, token)
 
-	go msg.Heartbeat(conn, ch_err_code)
+	go msg.Heartbeat(conn, ch_write_msg, ch_err_code)
 
 	for {
 		select {
@@ -93,6 +94,8 @@ func runWsCli(token string) {
 				fmt.Println("CloseNoStatusReceived:", code)
 			case websocket.CloseAbnormalClosure:
 				fmt.Println("CloseAbnormalClosure:", code)
+			case websocket.CloseMessageTooBig:
+				fmt.Println("CloseMessageTooBig:", code)
 			default:
 				fmt.Println("code:", code)
 			}
