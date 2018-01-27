@@ -27,7 +27,11 @@ var (
 var (
 	ch_read_msg  = make(chan []byte)
 	ch_write_msg = make(chan []byte)
-	ch_err_code  = make(chan error)
+	ch_err       = make(chan error)
+)
+
+var (
+	ws_url = url.URL{Scheme: "ws", Host: *SERVER_ADDR, Path: "/"}
 )
 
 func def(w http.ResponseWriter, req *http.Request) {
@@ -50,15 +54,11 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 
-	// runTcpCli(token)
-
 	runWsCli(token)
 }
 
 func runWsCli(token string) {
-	u := url.URL{Scheme: "ws", Host: *SERVER_ADDR, Path: "/"}
-
-	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(ws_url.String(), nil)
 
 	if nil != err {
 		log.Fatal(err)
@@ -68,13 +68,13 @@ func runWsCli(token string) {
 
 	conn.EnableWriteCompression(true)
 
-	go msg.OnMessage(conn, ch_read_msg, ch_err_code)
+	go msg.OnMessage(conn, ch_read_msg, ch_err)
 
 	msg.Login(conn, token)
 
-	go msg.Process(ch_read_msg, ch_write_msg, ch_err_code)
+	go msg.Process(ch_read_msg, ch_write_msg, ch_err)
 
-	msg.Heartbeat(conn, ch_write_msg, ch_err_code)
+	msg.Heartbeat(conn, ch_write_msg, ch_err)
 }
 
 func runTcpCli(token string) {

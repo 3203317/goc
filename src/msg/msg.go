@@ -21,7 +21,7 @@ func Login(conn *websocket.Conn, token string) {
 	fmt.Println("send token:", token)
 }
 
-func Heartbeat(conn *websocket.Conn, ch_write_msg chan []byte, ch_err_code chan error) {
+func Heartbeat(conn *websocket.Conn, ch_write_msg chan []byte, ch_err chan error) {
 	ticker := time.NewTicker(time.Nanosecond * *HEARTBEAT)
 
 	defer func() {
@@ -48,14 +48,14 @@ func Heartbeat(conn *websocket.Conn, ch_write_msg chan []byte, ch_err_code chan 
 	}
 }
 
-func OnMessage(conn *websocket.Conn, ch_read_msg chan []byte, ch_err_code chan error) {
+func OnMessage(conn *websocket.Conn, ch_read_msg chan []byte, ch_err chan error) {
 	for {
 		_, msg, err := conn.ReadMessage()
 
 		if nil != err {
 			// werr := err.(*websocket.CloseError)
-			// ch_err_code <- werr.Code
-			ch_err_code <- err
+			// ch_err  <- werr.Code
+			ch_err <- err
 			break
 		}
 
@@ -65,7 +65,7 @@ func OnMessage(conn *websocket.Conn, ch_read_msg chan []byte, ch_err_code chan e
 	}
 }
 
-func Process(ch_read_msg, ch_write_msg chan []byte, ch_err_code chan error) {
+func Process(ch_read_msg, ch_write_msg chan []byte, ch_err chan error) {
 	b := []byte("['',2,'']")
 
 	for {
@@ -84,7 +84,7 @@ func Process(ch_read_msg, ch_write_msg chan []byte, ch_err_code chan error) {
 				ch_write_msg <- b
 			}
 
-		case err := <-ch_err_code:
+		case err := <-ch_err:
 
 			// switch code {
 			// case websocket.CloseNoStatusReceived:
