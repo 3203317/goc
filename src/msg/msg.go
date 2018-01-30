@@ -80,7 +80,10 @@ func Process(ch_read_msg, ch_write_msg chan []byte, ch_err chan error) {
 
 			fmt.Println("data:", sb)
 
-			if 7 == sb[0].(float64) {
+			switch sb[0].(float64) {
+			case 1:
+				fmt.Println("登陆成功")
+			case 7:
 				ch_write_msg <- b
 			}
 

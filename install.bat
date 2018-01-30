@@ -21,4 +21,5 @@ go install goc
 echo [FINISHED]
 echo.
 
+cls
 .\bin\goc.exe
