@@ -35,13 +35,13 @@ func Heartbeat(conn *websocket.Conn, ch_write_msg chan []byte, ch_err chan error
 		case <-ticker.C:
 
 			if err := conn.WriteMessage(websocket.BinaryMessage, b); nil != err {
-				log.Fatal(err)
+				ch_err <- err
 			}
 
 		case msg := <-ch_write_msg:
 
 			if err := conn.WriteMessage(websocket.BinaryMessage, msg); nil != err {
-				log.Fatal(err)
+				ch_err <- err
 			}
 
 		}
@@ -75,15 +75,17 @@ func Process(ch_read_msg, ch_write_msg chan []byte, ch_err chan error) {
 			var sb []interface{}
 
 			if err := json.Unmarshal(msg, &sb); nil != err {
-				log.Fatal(err)
+				ch_err <- err
+				continue
 			}
-
-			fmt.Println("data:", sb)
 
 			switch sb[0].(float64) {
 			case 1:
-				fmt.Println("登陆成功")
+				fmt.Println("登陆:", sb)
+			case 2:
+				fmt.Println("data:", sb)
 			case 7:
+				fmt.Println("data:", sb)
 				ch_write_msg <- b
 			}
 
