@@ -28,6 +28,7 @@ var (
 	ch_read_msg  = make(chan []byte)
 	ch_write_msg = make(chan []byte)
 	ch_err       = make(chan error)
+	ch_status    = make(chan int)
 )
 
 var (
@@ -58,11 +59,7 @@ func main() {
 }
 
 func runWsCli(token string) {
-	conn, _, err := websocket.DefaultDialer.Dial(ws_url.String(), nil)
-
-	if nil != err {
-		log.Fatal(err)
-	}
+	conn := getConn()
 
 	defer conn.Close()
 
@@ -73,6 +70,16 @@ func runWsCli(token string) {
 
 	msg.Login(conn, token)
 	msg.Heartbeat(conn, ch_write_msg, ch_err)
+}
+
+func getConn() *websocket.Conn {
+	conn, _, err := websocket.DefaultDialer.Dial(ws_url.String(), nil)
+
+	if nil != err {
+		log.Fatal(err)
+	}
+
+	return conn
 }
 
 func runTcpCli(token string) {
