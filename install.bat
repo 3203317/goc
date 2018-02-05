@@ -22,4 +22,4 @@ echo [FINISHED]
 echo.
 
 cls
-.\bin\goc.exe
+.\bin\goc.exe -REDIS_PWD=shuoleniyebudong -HEARTBEAT=100000000ns

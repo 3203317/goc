@@ -20,7 +20,7 @@ import (
 var (
 	SERVER_ADDR    = flag.String("SERVER_ADDR", "47.104.99.102:9988", "前置机地址")
 	REDIS_ADDR     = flag.String("REDIS_ADDR", "47.104.99.102:6379", "Redis地址")
-	REDIS_PWD      = flag.String("REDIS_PWD", "shuoleniyebudong", "Redis密码")
+	REDIS_PWD      = flag.String("REDIS_PWD", "123456", "Redis密码")
 	REDIS_SHA_AUTH = flag.String("REDIS_SHA_AUTH", "a0ad12f31d7de75a5153bdff954caf5bc15b9501", "Redis授权码")
 )
 
