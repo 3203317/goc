@@ -22,6 +22,8 @@ var (
 	REDIS_ADDR     = flag.String("REDIS_ADDR", "47.104.99.102:6379", "Redis地址")
 	REDIS_PWD      = flag.String("REDIS_PWD", "123456", "Redis密码")
 	REDIS_SHA_AUTH = flag.String("REDIS_SHA_AUTH", "a0ad12f31d7de75a5153bdff954caf5bc15b9501", "Redis授权码")
+
+	CLIENT_ID = flag.String("CLIENT_ID", "", "客户端ID")
 )
 
 var (
@@ -125,7 +127,7 @@ func connRedis() string {
 
 	uuid := strings.Replace(UUID.Rand().Hex(), "-", "", -1)
 
-	_token, err := client.EvalSha(*REDIS_SHA_AUTH, []string{"1", "1", "backend_1", uuid}, 5, 68, "BACK").Result()
+	_token, err := client.EvalSha(*REDIS_SHA_AUTH, []string{"1", "1", *CLIENT_ID, uuid}, 5, 68, "BACK").Result()
 	if nil != err {
 		log.Fatal(err)
 	}
