@@ -22,4 +22,4 @@ echo [FINISHED]
 echo.
 
 cls
-.\bin\goc.exe -REDIS_PWD=shuoleniyebudong -HEARTBEAT=10000000ns -CLIENT_ID=backend_1
+.\bin\goc.exe -REDIS_PWD=shuoleniyebudong -CLIENT_ID=backend_1 -REDIS_SHA_AUTH=a0ad12f31d7de75a5153bdff954caf5bc15b9501

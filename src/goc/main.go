@@ -5,23 +5,19 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-redis/redis"
-	"github.com/gorilla/websocket"
 	UUID "github.com/snluu/uuid"
-	"io"
 	"log"
-	"msg"
-	"net"
-	"net/http"
 	"net/url"
-	"reflect"
+	_ "reflect"
 	"strings"
+	"time"
 )
 
 var (
 	SERVER_ADDR    = flag.String("SERVER_ADDR", "47.104.99.102:9988", "前置机地址")
 	REDIS_ADDR     = flag.String("REDIS_ADDR", "47.104.99.102:6379", "Redis地址")
 	REDIS_PWD      = flag.String("REDIS_PWD", "123456", "Redis密码")
-	REDIS_SHA_AUTH = flag.String("REDIS_SHA_AUTH", "a0ad12f31d7de75a5153bdff954caf5bc15b9501", "Redis授权码")
+	REDIS_SHA_AUTH = flag.String("REDIS_SHA_AUTH", "", "Redis授权码")
 
 	CLIENT_ID = flag.String("CLIENT_ID", "", "客户端ID")
 )
@@ -30,15 +26,22 @@ var (
 	ch_read_msg  = make(chan []byte)
 	ch_write_msg = make(chan []byte)
 	ch_err       = make(chan error)
-	ch_status    = make(chan int)
+	ch_status    = make(chan Status)
 )
 
 var (
 	ws_url = url.URL{Scheme: "ws", Host: *SERVER_ADDR, Path: "/"}
 )
 
-func def(w http.ResponseWriter, req *http.Request) {
-	io.WriteString(w, "hello, world!\n")
+type Status struct {
+	flag int
+	x    x
+	msg  string
+	data interface{}
+}
+
+type x struct {
+	x string
 }
 
 func main() {
@@ -47,69 +50,30 @@ func main() {
 	config.LoadCfg()
 	fmt.Println("Hello, GO!")
 
-	token := connRedis()
+	go start()
 
-	fmt.Println(token, reflect.TypeOf(token))
-
-	// http.HandleFunc("/", def)
-	// err := http.ListenAndServe(":80", nil)
-	// if nil != err {
-	// 	log.Fatal(err)
-	// }
-
-	runWsCli(token)
+	mLoop()
 }
 
-func runWsCli(token string) {
-	conn := getConn()
-
-	defer conn.Close()
-
-	conn.EnableWriteCompression(true)
-
-	go msg.OnMessage(conn, ch_read_msg, ch_err)
-	go msg.Process(ch_read_msg, ch_write_msg, ch_err)
-
-	msg.Login(conn, token)
-	msg.Heartbeat(conn, ch_write_msg, ch_err)
-}
-
-func getConn() *websocket.Conn {
-	conn, _, err := websocket.DefaultDialer.Dial(ws_url.String(), nil)
-
-	if nil != err {
-		log.Fatal(err)
-	}
-
-	return conn
-}
-
-func runTcpCli(token string) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", *SERVER_ADDR)
-
-	if nil != err {
-		log.Fatal(err)
-	}
-
-	conn, err := net.DialTCP("tcp", nil, tcpAddr)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer conn.Close()
-
-	lens, err := conn.Write([]byte(token))
-	if nil != err {
-		log.Fatal(err)
-	}
-
-	fmt.Println(lens)
-
+func mLoop() {
 	for {
+		select {
+		case status := <-ch_status:
+
+			switch status.flag {
+			case 0:
+			case 1:
+				fmt.Println(1)
+				go getToken()
+			case 2:
+				fmt.Println("2", status.data)
+			}
+
+		}
 	}
 }
 
-func connRedis() string {
+func getToken() {
 	client := redis.NewClient(&redis.Options{
 		Addr:     *REDIS_ADDR,
 		Password: *REDIS_PWD,
@@ -133,5 +97,22 @@ func connRedis() string {
 	}
 
 	token, _ := _token.(string)
-	return token
+
+	// fmt.Println(token, reflect.TypeOf(token))
+	ch_status <- Status{flag: 2, data: token}
+}
+
+func start() {
+	fmt.Println("start")
+
+	ticker := time.NewTicker(time.Millisecond * 100)
+
+	defer func() {
+		ticker.Stop()
+	}()
+
+	select {
+	case <-ticker.C:
+		ch_status <- Status{flag: 1}
+	}
 }
