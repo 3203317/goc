@@ -34,7 +34,7 @@ var (
 )
 
 type Status struct {
-	flag int
+	code int
 	x    x
 	msg  string
 	data interface{}
@@ -60,7 +60,7 @@ func mLoop() {
 		select {
 		case status := <-ch_status:
 
-			switch status.flag {
+			switch status.code {
 			case 0:
 			case 1:
 				fmt.Println(1)
@@ -99,7 +99,7 @@ func getToken() {
 	token, _ := _token.(string)
 
 	// fmt.Println(token, reflect.TypeOf(token))
-	ch_status <- Status{flag: 2, data: token}
+	ch_status <- Status{code: 2, data: token}
 }
 
 func start() {
@@ -113,6 +113,6 @@ func start() {
 
 	select {
 	case <-ticker.C:
-		ch_status <- Status{flag: 1}
+		ch_status <- Status{code: 1}
 	}
 }
