@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	UUID "github.com/snluu/uuid"
+	"io"
 	"log"
+	"net"
+	"net/http"
 	"net/url"
 	_ "reflect"
 	"strings"
@@ -33,6 +36,10 @@ var (
 	ws_url = url.URL{Scheme: "ws", Host: *SERVER_ADDR, Path: "/"}
 )
 
+func def(w http.ResponseWriter, req *http.Request) {
+	io.WriteString(w, "hello, world!\n")
+}
+
 type Status struct {
 	code int
 	x    x
@@ -48,7 +55,9 @@ func main() {
 	flag.Parse()
 
 	config.LoadCfg()
-	fmt.Println("Hello, GO!")
+	log.Println("Hello, GO!")
+
+	// runHttpServ()
 
 	go start()
 
@@ -63,13 +72,21 @@ func mLoop() {
 			switch status.code {
 			case 0:
 			case 1:
-				fmt.Println(1)
+				log.Println(1)
 				go getToken()
 			case 2:
-				fmt.Println("2", status.data)
+				fmt.Println(2, status.data)
 			}
 
 		}
+	}
+}
+
+func runHttpServ() {
+	http.HandleFunc("/", def)
+	err := http.ListenAndServe(":80", nil)
+	if nil != err {
+		log.Fatal(err)
 	}
 }
 
@@ -103,7 +120,7 @@ func getToken() {
 }
 
 func start() {
-	fmt.Println("start")
+	log.Println("start")
 
 	ticker := time.NewTicker(time.Millisecond * 100)
 
@@ -114,5 +131,30 @@ func start() {
 	select {
 	case <-ticker.C:
 		ch_status <- Status{code: 1}
+	}
+}
+
+func runTcpCli(token string) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", *SERVER_ADDR)
+
+	if nil != err {
+		log.Fatal(err)
+	}
+
+	conn, err := net.DialTCP("tcp", nil, tcpAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer conn.Close()
+
+	lens, err := conn.Write([]byte(token))
+	if nil != err {
+		log.Fatal(err)
+	}
+
+	fmt.Println(lens)
+
+	for {
 	}
 }
