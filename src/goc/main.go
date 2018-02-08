@@ -44,7 +44,7 @@ func def(w http.ResponseWriter, req *http.Request) {
 type Status struct {
 	code int
 	x    x
-	msg  string
+	err  error
 	data interface{}
 }
 
@@ -71,19 +71,21 @@ func mLoop() {
 		case status := <-ch_status:
 
 			switch status.code {
+
+			case -1:
+				log.Println("[ERROR]", status.code, status.err)
+				go start()
+
 			case 0:
+
 			case 1:
 				log.Println("code:", 1)
 				go getToken()
-			case 11:
-				log.Println("[ERROR]", 11)
-				go start()
+
 			case 2:
 				log.Println("code:", 2)
 				go runWsCli(status.data.(string))
-			case 21:
-				log.Println("[ERROR]", 21)
-				go start()
+
 			case 3:
 				fmt.Println(3)
 			}
@@ -120,7 +122,7 @@ func getToken() {
 
 	_token, err := client.EvalSha(*REDIS_SHA_AUTH, []string{"1", "1", *CLIENT_ID, uuid}, 5, 68, "BACK").Result()
 	if nil != err {
-		ch_status <- Status{code: 11, data: err}
+		ch_status <- Status{code: -1, err: err}
 		return
 	}
 
@@ -149,7 +151,7 @@ func runWsCli(token string) {
 	conn, _, err := websocket.DefaultDialer.Dial(ws_url.String(), nil)
 
 	if nil != err {
-		ch_status <- Status{code: 21, data: err}
+		ch_status <- Status{code: -1, err: err}
 		return
 	}
 
