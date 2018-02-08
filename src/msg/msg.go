@@ -1,6 +1,7 @@
 package msg
 
 import (
+	"config"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -48,14 +49,14 @@ func Heartbeat(conn *websocket.Conn, ch_write_msg chan []byte, ch_err chan error
 	}
 }
 
-func OnMessage(conn *websocket.Conn, ch_read_msg chan []byte, ch_err chan error) {
+func OnMessage(conn *websocket.Conn, ch_read_msg chan []byte, ch_status chan config.Status) {
 	for {
 		_, msg, err := conn.ReadMessage()
 
 		if nil != err {
 			// werr := err.(*websocket.CloseError)
-			// ch_err  <- werr.Code
-			ch_err <- err
+			// ch_err <- werr.Code
+			ch_status <- config.Status{Code: -2, Err: err}
 			break
 		}
 

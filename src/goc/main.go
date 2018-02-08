@@ -9,6 +9,7 @@ import (
 	UUID "github.com/snluu/uuid"
 	"io"
 	"log"
+	"msg"
 	"net"
 	"net/http"
 	"net/url"
@@ -30,7 +31,7 @@ var (
 	ch_read_msg  = make(chan []byte)
 	ch_write_msg = make(chan []byte)
 	ch_err       = make(chan error)
-	ch_status    = make(chan Status)
+	ch_status    = make(chan config.Status)
 )
 
 var (
@@ -41,16 +42,16 @@ func def(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, "hello, world!\n")
 }
 
-type Status struct {
-	code int
-	x    x
-	err  error
-	data interface{}
-}
+// type config.Status struct {
+// 	code int
+// 	x    x
+// 	err  error
+// 	data interface{}
+// }
 
-type x struct {
-	x string
-}
+// type x struct {
+// 	x string
+// }
 
 func main() {
 	flag.Parse()
@@ -62,6 +63,10 @@ func main() {
 
 	go start()
 
+	// aa := config.config.Status{Code: 1}
+
+	// fmt.Println(aa)
+
 	mLoop()
 }
 
@@ -70,11 +75,14 @@ func mLoop() {
 		select {
 		case status := <-ch_status:
 
-			switch status.code {
+			switch status.Code {
 
 			case -1:
-				log.Println("[ERROR]", status.code, status.err)
+				log.Println("[ERROR]", status.Code, status.Err)
 				go start()
+
+			case -2:
+				log.Println("code:", -2)
 
 			case 0:
 				log.Println("code:", 0)
@@ -86,7 +94,7 @@ func mLoop() {
 
 			case 2:
 				log.Println("code:", 2)
-				go runWsCli(status.data.(string))
+				go runWsCli(status.Data.(string))
 
 			case 3:
 				fmt.Println(3)
@@ -124,14 +132,14 @@ func getToken() {
 
 	_token, err := client.EvalSha(*REDIS_SHA_AUTH, []string{"1", "1", *CLIENT_ID, uuid}, 5, 68, "BACK").Result()
 	if nil != err {
-		ch_status <- Status{code: -1, err: err}
+		ch_status <- config.Status{Code: -1, Err: err}
 		return
 	}
 
 	token, _ := _token.(string)
 
 	// fmt.Println(token, reflect.TypeOf(token))
-	ch_status <- Status{code: 2, data: token}
+	ch_status <- config.Status{Code: 2, Data: token}
 }
 
 func start() {
@@ -145,7 +153,7 @@ func start() {
 
 	select {
 	case <-ticker.C:
-		ch_status <- Status{code: 1}
+		ch_status <- config.Status{Code: 1}
 	}
 }
 
@@ -153,16 +161,19 @@ func runWsCli(token string) {
 	conn, _, err := websocket.DefaultDialer.Dial(ws_url.String(), nil)
 
 	if nil != err {
-		ch_status <- Status{code: -1, err: err}
+		ch_status <- config.Status{Code: -1, Err: err}
 		return
 	}
 
-	defer func() {
-		conn.Close()
-		ch_status <- Status{code: 0}
-	}()
+	// defer func() {
+	// 	conn.Close()
+	// 	ch_status <- config.Status{Code: 0}
+	// }()
 
 	conn.EnableWriteCompression(true)
+
+	go msg.OnMessage(conn, ch_read_msg, ch_status)
+
 }
 
 func runTcpCli(token string) {
