@@ -77,6 +77,8 @@ func mLoop() {
 				go start()
 
 			case 0:
+				log.Println("code:", 0)
+				go start()
 
 			case 1:
 				log.Println("code:", 1)
@@ -155,7 +157,10 @@ func runWsCli(token string) {
 		return
 	}
 
-	defer conn.Close()
+	defer func() {
+		conn.Close()
+		ch_status <- Status{code: 0}
+	}()
 
 	conn.EnableWriteCompression(true)
 }
