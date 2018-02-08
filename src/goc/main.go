@@ -42,17 +42,6 @@ func def(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, "hello, world!\n")
 }
 
-// type config.Status struct {
-// 	code int
-// 	x    x
-// 	err  error
-// 	data interface{}
-// }
-
-// type x struct {
-// 	x string
-// }
-
 func main() {
 	flag.Parse()
 
@@ -62,10 +51,6 @@ func main() {
 	// runHttpServ()
 
 	go start()
-
-	// aa := config.config.Status{Code: 1}
-
-	// fmt.Println(aa)
 
 	mLoop()
 }
@@ -82,7 +67,8 @@ func mLoop() {
 				go start()
 
 			case -2:
-				log.Println("code:", -2)
+				log.Println("[ERROR]", status.Code, status.Err)
+				go start()
 
 			case 0:
 				log.Println("code:", 0)

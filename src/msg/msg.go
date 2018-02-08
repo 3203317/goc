@@ -55,7 +55,6 @@ func OnMessage(conn *websocket.Conn, ch_read_msg chan []byte, ch_status chan con
 
 		if nil != err {
 			// werr := err.(*websocket.CloseError)
-			// ch_err <- werr.Code
 			ch_status <- config.Status{Code: -2, Err: err}
 			break
 		}
