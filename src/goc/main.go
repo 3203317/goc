@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-redis/redis"
-	_ "github.com/gorilla/websocket"
+	"github.com/gorilla/websocket"
 	UUID "github.com/snluu/uuid"
 	"io"
 	"log"
@@ -73,11 +73,17 @@ func mLoop() {
 			switch status.code {
 			case 0:
 			case 1:
-				log.Println(1)
+				log.Println("code:", 1)
 				go getToken()
+			case 11:
+				log.Println("[ERROR]", 11)
+				go start()
 			case 2:
-				log.Println(2)
+				log.Println("code:", 2)
 				go runWsCli(status.data.(string))
+			case 21:
+				log.Println("[ERROR]", 21)
+				go start()
 			case 3:
 				fmt.Println(3)
 			}
@@ -114,7 +120,8 @@ func getToken() {
 
 	_token, err := client.EvalSha(*REDIS_SHA_AUTH, []string{"1", "1", *CLIENT_ID, uuid}, 5, 68, "BACK").Result()
 	if nil != err {
-		log.Fatal(err)
+		ch_status <- Status{code: 11, data: err}
+		return
 	}
 
 	token, _ := _token.(string)
@@ -139,7 +146,16 @@ func start() {
 }
 
 func runWsCli(token string) {
-	log.Println(token)
+	conn, _, err := websocket.DefaultDialer.Dial(ws_url.String(), nil)
+
+	if nil != err {
+		ch_status <- Status{code: 21, data: err}
+		return
+	}
+
+	defer conn.Close()
+
+	conn.EnableWriteCompression(true)
 }
 
 func runTcpCli(token string) {
