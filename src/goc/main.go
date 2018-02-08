@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-redis/redis"
+	_ "github.com/gorilla/websocket"
 	UUID "github.com/snluu/uuid"
 	"io"
 	"log"
@@ -75,7 +76,10 @@ func mLoop() {
 				log.Println(1)
 				go getToken()
 			case 2:
-				fmt.Println(2, status.data)
+				log.Println(2)
+				go runWsCli(status.data.(string))
+			case 3:
+				fmt.Println(3)
 			}
 
 		}
@@ -132,6 +136,10 @@ func start() {
 	case <-ticker.C:
 		ch_status <- Status{code: 1}
 	}
+}
+
+func runWsCli(token string) {
+	log.Println(token)
 }
 
 func runTcpCli(token string) {
